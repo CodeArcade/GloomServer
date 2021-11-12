@@ -28,6 +28,7 @@ namespace GloomServer
         private static bool ServerIsRunning = true;
 
         private static CancellationTokenRegistration AppShutdownHandler;
+        private static RequestHandler RequestHandler { get; set; } = new RequestHandler();
 
         private static ILogger<WebSocketMiddleware> Logger { get; set; }
 
@@ -47,7 +48,8 @@ namespace GloomServer
             {
                 if (ServerIsRunning)
                 {
-                    if (context.WebSockets.IsWebSocketRequest) // TODO: Socket requests are handeld here
+                    //  Socket requests are handeld here
+                    if (context.WebSockets.IsWebSocketRequest)
                     {
                         int socketId = Interlocked.Increment(ref SocketCounter);
                         var socket = await context.WebSockets.AcceptWebSocketAsync();
@@ -62,19 +64,7 @@ namespace GloomServer
                         await completion.Task;
                     }
                     else // everything else is treated as html request
-                    {
-                        //// https://stackoverflow.com/questions/40494913/how-to-read-request-body-in-an-asp-net-core-webapi-controller
-                        //string body;
-                        //using (StreamReader reader = new(context.Request.Body, Encoding.UTF8, true, 1024, true))
-                        //    body = await reader.ReadToEndAsync();
-
-                        //Logger.LogWarning("HEADERS:" + JsonConvert.SerializeObject(context.Request.Headers, Formatting.Indented));
-                        //Logger.LogWarning("Body:" + body);
-                        //Logger.LogWarning(JsonConvert.SerializeObject(context.Request.Path, Formatting.Indented));
-                        //Logger.LogWarning(JsonConvert.SerializeObject(context.Request.Method, Formatting.Indented));
-
                         await context.Response.WriteAsync($"<html>Hallo Welt</html>");
-                    }
                 }
                 else
                 {
@@ -99,9 +89,9 @@ namespace GloomServer
 
         public static void Broadcast(string message)
         {
-            Logger?.LogTrace($"Broadcast: {message}");
+            Logger?.LogDebug($"Broadcast: {message}");
             foreach (var kvp in Clients)
-                kvp.Value.BroadcastQueue.Add(message);
+                kvp.Value.BroadcastQueue.Add(RequestHandler.GetBroadcastResponse(message));
         }
 
         // event-handlers are the sole case where async void is valid
@@ -191,9 +181,28 @@ namespace GloomServer
                         if (client.Socket.State == WebSocketState.Open)
                         {
                             Logger?.LogDebug($"Socket {client.SocketId}: Received {receiveResult.MessageType} frame ({receiveResult.Count} bytes).");
-                            Logger?.LogDebug($"Socket {client.SocketId}: Echoing data to queue.");
+
                             string message = Encoding.UTF8.GetString(buffer.Array, 0, receiveResult.Count);
-                            client.BroadcastQueue.Add(message);
+                            List<int> targetSockets = new();
+                            string response = RequestHandler.HandleRequest(message, out targetSockets, client);
+
+                            foreach (int target in targetSockets)
+                            {
+                                try
+                                {
+                                    Client targetClient = null;
+
+                                    if (Clients.TryGetValue(target, out targetClient))
+                                        targetClient.BroadcastQueue.Add(response);
+                                    else
+                                        throw new Exception($"Socket not connected");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger?.LogError($"Socket {target}:");
+                                    Program.ReportException(ex);
+                                }
+                            }
                         }
                     }
                 }

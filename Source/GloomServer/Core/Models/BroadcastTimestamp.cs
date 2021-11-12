@@ -21,7 +21,7 @@ namespace GloomServer
 
         private void QueueBroadcast(object state)
         {
-            WebSocketMiddleware.Broadcast($"Server time: {DateTimeOffset.Now.ToString("o")}");
+            WebSocketMiddleware.Broadcast($"Server time: {DateTimeOffset.Now:o}");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

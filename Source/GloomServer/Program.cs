@@ -84,7 +84,8 @@ namespace GloomServer
 
         public static void ReportException(Exception ex, [CallerMemberName] string location = "(Caller name not set)")
         {
-            Logger.Error($"\n{location}:\n  Exception {ex.GetType().Name}: {ex}");
+            Logger.Error($"\n{location}:\n  Exception {ex.GetType().Name}: {ex.Message}");
+            Logger.Debug(ex.ToString());
         }
     }
 }

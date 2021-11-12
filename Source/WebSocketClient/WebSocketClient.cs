@@ -92,6 +92,11 @@ namespace WebSocketClientExample
                         if (Socket.State == WebSocketState.Open && receiveResult.MessageType != WebSocketMessageType.Close)
                         {
                             string message = Encoding.UTF8.GetString(buffer.Array, 0, receiveResult.Count);
+                            GloomServer.Response response = Newtonsoft.Json.JsonConvert.DeserializeObject<GloomServer.Response>(message);
+                            if (response.Header.Identifier.Module.ToLower().Contains("cast")) continue;
+
+                            message = response.Body.ToString();
+
                             if (message.Length > 1) message = "\n" + message + "\n";
                             Console.Write(message);
                         }
@@ -115,18 +120,36 @@ namespace WebSocketClientExample
             }
         }
 
+        public static async void SendRequest(GloomServer.Request request)
+        {
+            var msgbuf = new ArraySegment<byte>(Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(request)));
+            await Socket.SendAsync(msgbuf, WebSocketMessageType.Text, endOfMessage: true, CancellationToken.None);
+        }
+
         private static async Task KeystrokeTransmitLoopAsync()
         {
             var cancellationToken = KeystrokeLoopTokenSource.Token;
-            while(!cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
                     await Task.Delay(Program.KEYSTROKE_TRANSMIT_INTERVAL_MS, cancellationToken);
-                    if(!cancellationToken.IsCancellationRequested && KeystrokeQueue.TryTake(out var message))
+                    if (!cancellationToken.IsCancellationRequested && KeystrokeQueue.TryTake(out var message))
                     {
-                        var msgbuf = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
-                        await Socket.SendAsync(msgbuf, WebSocketMessageType.Text, endOfMessage: true, CancellationToken.None);
+                        GloomServer.Request request = new()
+                        {
+                            Header = new()
+                            {
+                                Identifier = new()
+                                {
+                                    Module = "Dummy",
+                                    Function = "Echo"
+                                }
+                            },
+                            Body = message
+                        };
+
+                        SendRequest(request);
                     }
                 }
                 catch (OperationCanceledException)
