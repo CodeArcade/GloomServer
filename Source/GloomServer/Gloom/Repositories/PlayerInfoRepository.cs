@@ -16,7 +16,7 @@ namespace GloomServer.Gloom.Repositories
             WebSocketMiddleware.OnBroadcast += (sender, e) => RemoveGamesIfEmpty();
         }
 
-        public Game JoinGame(JoinRequest request, RequestHeader header)
+        public Game JoinGame(PlayerRequest request, RequestHeader header)
         {
             Game newGame = new();
 

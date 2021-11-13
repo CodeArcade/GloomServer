@@ -18,7 +18,7 @@ namespace GloomServer.Gloom.Controller
         }
 
         [Function("join")]
-        public Game JoinGame(JoinRequest request, RequestHeader header)
+        public Game JoinGame(PlayerRequest request, RequestHeader header)
         {
             Game game = PlayerInfoRepository.JoinGame(request, header);
 
