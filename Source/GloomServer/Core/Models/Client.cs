@@ -13,7 +13,7 @@ namespace GloomServer
 
         private ILogger Logger { get; set; }
 
-        public Client(int socketId, WebSocket socket, TaskCompletionSource<object> taskCompletion, ILogger logger)
+        public Client(string socketId, WebSocket socket, TaskCompletionSource<object> taskCompletion, ILogger logger)
         {
             SocketId = socketId;
             Socket = socket;
@@ -21,7 +21,7 @@ namespace GloomServer
             Logger = logger;
         }
 
-        public int SocketId { get; private set; }
+        public string SocketId { get; private set; }
 
         public WebSocket Socket { get; private set; }
 

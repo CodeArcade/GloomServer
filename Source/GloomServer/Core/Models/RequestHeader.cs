@@ -5,7 +5,7 @@ namespace GloomServer
 {
     public class RequestHeader : BaseHeader
     {
-        public int SocketId { get; set; }
+        public string SocketId { get; set; }
         public RequestHeader() { MessageNumber = DateTime.Now.Ticks + " - " + new Random().Next(0, 999999) + ""; }
     }
 }

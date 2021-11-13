@@ -4,7 +4,7 @@ namespace GloomServer.Gloom.Models
 {
     public class Player
     {
-        public int SocketId { get; set; }
+        public string SocketId { get; set; }
 
         public string Name { get; set; }
         public string Icon { get; set; }

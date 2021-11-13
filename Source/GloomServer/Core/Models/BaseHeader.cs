@@ -6,6 +6,6 @@ namespace GloomServer
     {
         public Identifier Identifier { get; set; }
         public string MessageNumber { get; set; }
-        public IEnumerable<int> TargetSockets { get; set; }
+        public IEnumerable<string> TargetSockets { get; set; }
     }
 }

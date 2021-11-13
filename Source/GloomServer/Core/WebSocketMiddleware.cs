@@ -16,12 +16,10 @@ namespace GloomServer
 {
     public class WebSocketMiddleware : IMiddleware
     {
-        private static int SocketCounter = 0;
-
         /// <summary>
         /// The key is a socket id
         /// </summary>
-        private static readonly ConcurrentDictionary<int, Client> Clients = new();
+        private static readonly ConcurrentDictionary<string, Client> Clients = new();
 
         private static readonly CancellationTokenSource SocketLoopTokenSource = new();
 
@@ -53,7 +51,7 @@ namespace GloomServer
                     //  Socket requests are handeld here
                     if (context.WebSockets.IsWebSocketRequest)
                     {
-                        int socketId = Interlocked.Increment(ref SocketCounter);
+                        string socketId = Guid.NewGuid().ToString();
                         var socket = await context.WebSockets.AcceptWebSocketAsync();
                         var completion = new TaskCompletionSource<object>();
                         var client = new Client(socketId, socket, completion, Logger);
@@ -187,16 +185,14 @@ namespace GloomServer
                             Logger?.LogDebug($"Socket {client.SocketId}: Received {receiveResult.MessageType} frame ({receiveResult.Count} bytes).");
 
                             string message = Encoding.UTF8.GetString(buffer.Array, 0, receiveResult.Count);
-                            List<int> targetSockets = new();
+                            List<string> targetSockets = new();
                             string response = RequestHandler.HandleRequest(message, out targetSockets, client);
 
-                            foreach (int target in targetSockets)
+                            foreach (string target in targetSockets)
                             {
                                 try
                                 {
-                                    Client targetClient = null;
-
-                                    if (Clients.TryGetValue(target, out targetClient))
+                                    if (Clients.TryGetValue(target, out Client targetClient))
                                         targetClient.BroadcastQueue.Add(response);
                                     else
                                         throw new Exception($"Socket not connected");

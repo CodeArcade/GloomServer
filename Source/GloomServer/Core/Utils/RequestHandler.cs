@@ -20,7 +20,7 @@ namespace GloomServer
             Logger = LogManager.GetLogger(typeof(RequestHandler).Name);
         }
 
-        public string HandleRequest(string requestData, out List<int> targets, Client client)
+        public string HandleRequest(string requestData, out List<string> targets, Client client)
         {
             Response response = new();
             Request request = Converter.ConvertJsonToObject<Request>(requestData);
@@ -32,7 +32,7 @@ namespace GloomServer
             if (module is null)
             {
                 response = GetErrorResponse($"Failed to call function {request.Header.Identifier.Function} at unkown module {request.Header.Identifier.Module}",
-                    new List<int> { client.SocketId });
+                    new List<string> { client.SocketId });
                 Logger.Error($"Failed to call function {request.Header.Identifier.Function} at unkown module {request.Header.Identifier.Module}");
             }
             else
@@ -44,7 +44,7 @@ namespace GloomServer
                 catch (Exception ex)
                 {
                     response = GetErrorResponse($"Failed to process request for function {request.Header.Identifier.Function} at module {request.Header.Identifier.Module}: {Environment.NewLine} {ex}",
-                        new List<int> { client.SocketId });
+                        new List<string> { client.SocketId });
                     Logger.Error($"Failed to process request for function {request.Header.Identifier.Function} at module {request.Header.Identifier.Module}: {Environment.NewLine} {ex}");
                 }
             }
@@ -55,7 +55,7 @@ namespace GloomServer
                 targets = response.Header.TargetSockets.ToList();
             else
             {
-                targets = new List<int>() { client.SocketId };
+                targets = new List<string>() { client.SocketId };
                 response.Header.TargetSockets = targets;
             }
 
@@ -64,7 +64,7 @@ namespace GloomServer
             return Converter.ConvertObjectToJson(response);
         }
 
-        private Response GetErrorResponse(string message, List<int> targets)
+        private Response GetErrorResponse(string message, List<string> targets)
         {
             ResponseHeader header = new() { TargetSockets = targets, StatusCode = 400, Identifier = new() { Module = "Error", Function = "Error" } };
             return new Response { Header = header, Body = message };
