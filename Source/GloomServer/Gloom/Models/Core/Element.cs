@@ -2,8 +2,7 @@
 {
     public class Element
     {
-        public string Name { get; set; }
-        public string Icon { get; set; }
+        public ElementName Name { get; set; }
         public ElementStages Stage { get; set; }
     }
 
@@ -12,5 +11,15 @@
         Full,
         Half,
         Empty
+    }
+
+    public enum ElementName
+    {
+        Fire,
+        Ice,
+        Ground,
+        Air,
+        Light,
+        Dark
     }
 }

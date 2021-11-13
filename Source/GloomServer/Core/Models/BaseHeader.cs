@@ -2,7 +2,7 @@
 
 namespace GloomServer
 {
-    public abstract class BaseHeader
+    public class BaseHeader
     {
         public Identifier Identifier { get; set; }
         public string MessageNumber { get; set; }

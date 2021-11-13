@@ -64,15 +64,15 @@ namespace GloomServer
             return Converter.ConvertObjectToJson(response);
         }
 
-        private Response GetErrorResponse(string message, List<string> targets)
+        private static Response GetErrorResponse(string message, List<string> targets)
         {
-            ResponseHeader header = new() { TargetSockets = targets, StatusCode = 400, Identifier = new() { Module = "Error", Function = "Error" } };
+            BaseHeader header = new() { TargetSockets = targets, Identifier = new() { Module = "Error", Function = "Error" } };
             return new Response { Header = header, Body = message };
         }
 
         public string GetBroadcastResponse(string message)
         {
-            ResponseHeader header = new() { StatusCode = 200, Identifier = new() { Module = "Broadcast", Function = "Broadcast" } };
+            BaseHeader header = new() { Identifier = new() { Module = "Broadcast", Function = "Broadcast" } };
             return Converter.ConvertObjectToJson(new Response { Header = header, Body = message });
         }
     }

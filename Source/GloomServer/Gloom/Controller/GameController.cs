@@ -1,5 +1,7 @@
 ﻿using GloomServer.Gloom.Models;
+using GloomServer.Gloom.Models.PlayerInfoRepository;
 using GloomServer.Gloom.Repositories;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GloomServer.Gloom.Controller
@@ -16,32 +18,42 @@ namespace GloomServer.Gloom.Controller
         }
 
         [Function("join")]
-        public Game JoinGame(Game game, RequestHeader header)
+        public Game JoinGame(JoinRequest request, RequestHeader header)
         {
-            game = PlayerInfoRepository.JoinGame(game, header);
+            Game game = PlayerInfoRepository.JoinGame(request, header);
 
             ReturnToAllPlayers(game, header);
             return game;
         }
 
         [Function("leave")]
-        public Game LeaveGame(Game game, RequestHeader header)
+        public Game LeaveGame(PlayerRequest request, RequestHeader header)
         {
-            game = PlayerInfoRepository.LeaveGame(game, header);
+            Game game = PlayerInfoRepository.LeaveGame(request, header);
 
             ReturnToAllPlayers(game, header);
             return game;
         }
 
-        [Function("sync")]
-        public Game Sync(Game game, RequestHeader header)
+        [Function("update-player")]
+        public Game UpdatePlayer(PlayerRequest request, RequestHeader header)
         {
-            game = PlayerInfoRepository.Sync(game);
+            Game game = PlayerInfoRepository.UpdatePlayer(request);
 
             ReturnToAllPlayers(game, header);
             return game;
         }
 
-        private void ReturnToAllPlayers(Game game, RequestHeader header) => header.TargetSockets = game.Players.Select(x => x.SocketId);
+
+        [Function("update-elements")]
+        public Game UpdateElements(ElementsRequest request, RequestHeader header)
+        {
+            Game game = PlayerInfoRepository.UpdateElements(request);
+
+            ReturnToAllPlayers(game, header);
+            return game;
+        }
+
+        private static void ReturnToAllPlayers(Game game, RequestHeader header) => header.TargetSockets = game.Players.Select(x => x.SocketId);
     }
 }

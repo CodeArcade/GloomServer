@@ -32,6 +32,8 @@ namespace GloomServer
 
         public static event EventHandler OnBroadcast;
 
+        public static List<string> ConnectedSockets => Clients.Keys.ToList();
+
         // use dependency injection to grab a reference to the hosting container's lifetime cancellation tokens
         public WebSocketMiddleware(IHostApplicationLifetime hostLifetime, ILogger<WebSocketMiddleware> logger)
         {
@@ -90,7 +92,10 @@ namespace GloomServer
         public static void Broadcast(string message)
         {
             Logger?.LogDebug($"Broadcast: {message}");
-            OnBroadcast?.Invoke(message, new EventArgs());
+            try
+            {
+                OnBroadcast?.Invoke(message, new EventArgs());
+            }catch(Exception ex) { Program.ReportException(ex); }
 
             foreach (var kvp in Clients)
                 kvp.Value.BroadcastQueue.Add(RequestHandler.GetBroadcastResponse(message));
