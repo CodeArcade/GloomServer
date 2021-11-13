@@ -11,7 +11,7 @@ namespace GloomServer
     /// </summary>
     public class RequestHandler
     {
-        public static List<WebSocketRepository> Repositories { get; set; }
+        public static List<WebSocketController> Controllers { get; set; }
         private Logger Logger { get; }
         private Converter Converter { get; } = new Converter();
 
@@ -28,7 +28,7 @@ namespace GloomServer
 
             Logger.Info($"Received {Converter.ConvertObjectToJson(request)} from {client.SocketId}");
 
-            WebSocketRepository module = Repositories.FirstOrDefault(x => x.Name.ToLower() == request.Header.Identifier.Module.ToLower());
+            WebSocketController module = Controllers.FirstOrDefault(x => x.Name.ToLower() == request.Header.Identifier.Module.ToLower());
             if (module is null)
             {
                 response = GetErrorResponse($"Failed to call function {request.Header.Identifier.Function} at unkown module {request.Header.Identifier.Module}",

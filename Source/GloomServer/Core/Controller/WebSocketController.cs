@@ -6,12 +6,12 @@ using System.Reflection;
 
 namespace GloomServer
 {
-    public abstract class WebSocketRepository
+    public abstract class WebSocketController
     {
         public abstract string Name { get; }
         protected Logger Logger { get; private set; }
 
-        public WebSocketRepository()
+        public WebSocketController()
         {
             Logger = LogManager.GetLogger(GetType().Name);
         }

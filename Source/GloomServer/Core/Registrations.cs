@@ -18,7 +18,7 @@ namespace GloomServer
         {
             RegisterConfigurations(services);
             RegisterServices(services);
-            RegisterRepositories();
+            RegisterControllers();
         }
         private static void RegisterConfigurations(IServiceCollection services)
         {
@@ -30,9 +30,9 @@ namespace GloomServer
             services.AddSingleton(typeof(PathManager));
         }
 
-        private static void RegisterRepositories()
+        private static void RegisterControllers()
         {
-            RequestHandler.Repositories = new();
+            RequestHandler.Controllers = new();
 
             foreach (string dll in GetDlls())
             {
@@ -40,12 +40,12 @@ namespace GloomServer
                 {
                     foreach (Type t in Assembly.LoadFrom(dll).GetTypes())
                     {
-                        if (!typeof(WebSocketRepository).IsAssignableFrom(t)) continue;
+                        if (!typeof(WebSocketController).IsAssignableFrom(t)) continue;
                         if (t.IsAbstract) continue;
 
                         Logger.Debug($"Loading module {t.Name} from {Assembly.LoadFrom(dll).FullName}");
 
-                        RequestHandler.Repositories.Add((WebSocketRepository)Activator.CreateInstance(t));
+                        RequestHandler.Controllers.Add((WebSocketController)Activator.CreateInstance(t));
                     }
                 }
                 catch (Exception ex) { Logger.Warn(ex); }
